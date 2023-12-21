@@ -7,7 +7,7 @@ def enrich(row):
     file = row['path'].split('/')[-1][:-5]
 
     row['type'] = 'image'
-    row['labels'] = "labels/VOC_format/{file}.txt"
+    row['labels'] = f"labels/VOC_format/{file}.txt"
     if not file.startswith('IMG'):
         row['video'], row['date'], row['time'] = file.split('--')
         row['video'] = row['video'][-3:]
