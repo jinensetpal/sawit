@@ -2,12 +2,18 @@
 
 from dagshub.data_engine import datasources
 from src import const
+import random
 
 def enrich(row): 
-    file = row['path'].split('/')[-1][:-5]
+    splits = row['path'].split('/')
+    file = splits[-1][:-5]
+
+    row['split'] = splits[1]
+    if row['split'] == 'train': row['split'] = random.choices(list(const.SPLITS.keys()), weights=list(const.SPLITS.values()))
 
     row['type'] = 'image'
     row['labels'] = f"labels/VOC_format/{file}.txt"
+    row['confidence'] = 'high'
     if not file.startswith('IMG'):
         row['video'], row['date'], row['time'] = file.split('--')
         row['video'] = row['video'][-3:]
@@ -23,7 +29,7 @@ def preprocess():
     else: ds = datasources.get_datasource(const.REPO_NAME, name=const.DATASOURCE_NAME)
 
     df = ds['path'].contains('images').all().dataframe.apply(enrich, axis=1)
-    ds.upload_metadata_from_dataframe(df)
+    ds.upload_metadata_from_dataframe(df, path_column='path')
 
     (ds['type'] == 'image').save_dataset(const.DATASET_NAME)
 
