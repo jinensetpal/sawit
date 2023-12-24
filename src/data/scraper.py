@@ -1,58 +1,64 @@
 #!/usr/bin/env python3
 
-from dagshub.data_engine import datasources
+from utils.general import non_max_suppression
 from dagshub import get_repo_bucket_client
+from dagshub.data_engine import datasets
+from src.utils import warmup
+import imageio.v3 as iio
+from pathlib import Path
+from PIL import Image
 from src import const
+from glob import glob
 import pandas as pd
-import dagshub
-import arxiv
-import boto3
-import re
-import os
-
-REPO_NAME = config.get('dagshub','repo_name')
-USER_NAME = config.get('dagshub','user_name')
-TOKEN = config.get('dagshub','token')
-dagshub.auth.add_app_token(TOKEN)
-datasource_name = config.get('dagshub','datasource_name')
-
-# dagshub.init(REPO_NAME,USER_NAME)
+import youtube_dl
+import datetime
+import shutil
+import random
+import torch
 
 
-s3_client = get_repo_bucket_client(f"{USER_NAME}/{REPO_NAME}", flavor="boto")
+def download(targets):
+    for target in targets:
+        with youtube_dl.YoutubeDL({'outtmpl': (const.DATA_DIR / 'staging' / f"{target.split('/')[-1]}--{datetime.datetime.now().strftime('%Y-%M-%d--%H-%M-%S')}").as_posix()}) as ydl: ydl.download([target])
 
-column_names = ['Path','Entry Id','Title','Summary','Primary Category','Category','PDF Link']
 
-# topic = input("Enter the topic you need to search for : ")
-topic = config.get('data','papers')
-number_of_papers = config.get('data','number_of_papers')
-search = arxiv.Search(
-  query = topic,
-  max_results = 30,
-  sort_by = arxiv.SortCriterion.Relevance,
-  sort_order = arxiv.SortOrder.Descending
-)
-all_data = []
-os.makedirs(topic, exist_ok = True)
+def scrape():
+    ds = datasets.get_dataset(repo=const.REPO_NAME, name=const.DATASET_NAME)
+    bucket = get_repo_bucket_client(const.REPO_NAME, flavor='boto')
 
-for result in arxiv.Client().results(search):
-  path = f"{result.title}.pdf"
-  all_data.append([path,
-                   result.entry_id,
-                   result.title,
-                   result.summary,
-                   result.primary_category,
-                   result.categories,
-                   result.pdf_url])
+    model = torch.load(const.MODEL_DIR / const.ANNOTATOR_MODEL / 'best.pt')['model'].to(const.DEVICE)
+    model.eval()
+    model = warmup(model)
 
-  cleaned_title = re.sub(r'[^a-zA-Z0-9\s]', '', result.title)
-  print("Downloading file ", cleaned_title)
-  result.download_pdf(dirpath=f"./{topic}", filename=f"{cleaned_title}.pdf")
-  s3_client.upload_file(f"./{topic}/{cleaned_title}.pdf", REPO_NAME, f"{topic}/{cleaned_title}.pdf")
+    metadata = []
+    for target in glob(Path(const.DATA_DIR / 'staging').as_posix()):
+        n_frames = ds['video'].contains(target.split('/')[-1].split('--')[0])
+        video, date, time = target.split('/')[-1].split('--')
+        for idx, frame in iio.imiter(target, plugin='pyav'):
+            if idx % 20: continue
+            framename = f'{video}-{date}-{time}-{n_frames+idx+1}.png'
 
-metadata = pd.DataFrame(all_data, columns=column_names)
-ds = datasources.get_or_create(repo=f"{USER_NAME}/{REPO_NAME}", name=datasource_name, path="Science")
-ds.upload_metadata_from_dataframe(metadata, path_column="Path")
+            Image.fromarray(frame).save('frame.png')
+            bucket.upload_file('frame.png', const.REPO_NAME, const.DATA_DIR / 'images' / 'augmented' / f'{framename}.png')
 
-print("Papers Uploaded to your repo")
+            with open('labels.txt', 'w'), torch.no_grad() as labels:
+                for detection in non_max_suppression(model(torch.tensor([frame], dtype=torch.half)), iou_thres=0, conf_thres=0.99, max_det=10)[0].tolist():
+                    labels.write(' '.join([const.CLASSES[int(detection[-1])], *detection[:-1]]) + '\n')
+                bucket.upload_file('labels.txt', const.REPO_NAME, const.DATA_DIR / 'labels' / f'{framename}.txt')
 
+            metadata.append({'path': (const.DATA_DIR / 'images' / 'augmented' / f'{framename}.png').as_posix(),
+                             'date': date,
+                             'time': time,
+                             'video': video,
+                             'type': 'image',
+                             'annotator': const.ANNOTATOR_MODEL,
+                             'split': random.choices(list(const.SPLITS.keys()), weights=list(const.SPLITS.values())),
+                             'labels': (const.DATA_DIR / 'labels' / f'{framename}.txt').as_posix()})
+
+    shutil.rmtree(const.DATA_DIR / 'staging')
+    ds.upload_metadata_from_dataframe(pd.DataFrame(metadata), path_column='path')
+
+
+if __name__ == '__main__':
+    download(const.TARGETS)
+    scrape()

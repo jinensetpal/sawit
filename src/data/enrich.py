@@ -4,7 +4,8 @@ from dagshub.data_engine import datasources
 from src import const
 import random
 
-def enrich(row): 
+
+def enrich(row):
     splits = row['path'].split('/')
     file = splits[-1][:-5]
 
@@ -13,13 +14,14 @@ def enrich(row):
 
     row['type'] = 'image'
     row['labels'] = f"labels/VOC_format/{file}.txt"
-    row['confidence'] = 'high'
+    row['annotator'] = 'human'
     if not file.startswith('IMG'):
         row['video'], row['date'], row['time'] = file.split('--')
         row['video'] = row['video'][-3:]
         row['time'] = row['time'][:8]
-    
+
     return row
+
 
 def preprocess():
     if not len(datasources.get_datasources(const.REPO_NAME)):
@@ -32,6 +34,7 @@ def preprocess():
     ds.upload_metadata_from_dataframe(df, path_column='path')
 
     (ds['type'] == 'image').save_dataset(const.DATASET_NAME)
+
 
 if __name__ == '__main__':
     preprocess()
