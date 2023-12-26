@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from dagshub.data_engine import datasources
+from dagshub.data_engine import datasources, datasets
 from src import const
 import random
 
@@ -13,7 +13,7 @@ def enrich(row):
     if row['split'] == 'train': row['split'] = random.choices(list(const.SPLITS.keys()), weights=list(const.SPLITS.values()))
 
     row['type'] = 'image'
-    row['labels'] = f"labels/VOC_format/{file}.txt"
+    row['labels'] = f'labels/VOC_format/{file}.txt'
     row['annotator'] = 'human'
     if not file.startswith('IMG'):
         row['video'], row['date'], row['time'] = file.split('--')
@@ -21,6 +21,10 @@ def enrich(row):
         row['time'] = row['time'][:8]
 
     return row
+
+
+def encoded_json(filepath):
+    return str([{key:value if key == 'class' else int(value) for key, value in zip(['class', 'x', 'y', 'w', 'h'], line.split())} for line in open(filepath, 'r').readlines()])
 
 
 def preprocess():
@@ -31,9 +35,13 @@ def preprocess():
     else: ds = datasources.get_datasource(const.REPO_NAME, name=const.DATASOURCE_NAME)
 
     df = ds['path'].contains('images').all().dataframe.apply(enrich, axis=1)
-    ds.upload_metadata_from_dataframe(df, path_column='path')
+    ds.upload_metadata_from_dataframe(df, path_column='labels')
 
-    (ds['type'] == 'image').save_dataset(const.DATASET_NAME)
+    q = (ds['type'] == 'image')
+    df['labels'] = list(q.all().as_ml_dataset('torch', tensorizers=[encoded_json,]))
+
+    ds.upload_metadata_from_dataframe(df, path_column='path')
+    q.save_dataset(const.DATASET_NAME)
 
 
 if __name__ == '__main__':

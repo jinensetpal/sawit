@@ -15,6 +15,16 @@ import datetime
 import shutil
 import random
 import torch
+import pafy
+import cv2
+
+
+# TODO: multiproc
+def stream(target):
+    cap = cv2.VideoCapture(pafy.new(target).getbest(preftype='mp4').url)
+    while True:
+        _, img = cap.read()
+        yield img
 
 
 def download(targets):
@@ -39,7 +49,7 @@ def scrape():
             framename = f'{video}-{date}-{time}-{n_frames+idx+1}.png'
 
             Image.fromarray(frame).save('frame.png')
-            bucket.upload_file('frame.png', const.REPO_NAME, const.DATA_DIR / 'images' / 'augmented' / f'{framename}.png')
+            bucket.upload_file('frame.png', const.REPO_NAME.split('/')[0], const.DATA_DIR / 'images' / 'augmented' / f'{framename}.png')
 
             with open('labels.txt', 'w'), torch.no_grad() as labels:
                 for detection in non_max_suppression(model(torch.tensor([frame], dtype=torch.half)), iou_thres=0, conf_thres=0.99, max_det=10)[0].tolist():
