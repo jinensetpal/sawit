@@ -22,6 +22,7 @@ DATASET_NAME = 'sawit'
 N_CHANNELS = 3
 IMAGE_SIZE = (640, 480)
 IMAGE_SHAPE = (N_CHANNELS, *IMAGE_SIZE)
+LABEL_KEYS = ['class', 'x', 'y', 'w', 'h', 'confidence']
 CLASSES = ['Frog', 'Lizard', 'Bird', 'Small_mammal', 'Big_mammal', 'Spider', 'Scorpion']
 
 # training

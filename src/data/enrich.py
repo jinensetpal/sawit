@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from dagshub.data_engine import datasources, datasets
+from dagshub.data_engine import datasources
 from src import const
 import random
 
@@ -24,7 +24,7 @@ def enrich(row):
 
 
 def encoded_json(filepath):
-    return str([{key:value if key == 'class' else int(value) for key, value in zip(['class', 'x', 'y', 'w', 'h'], line.split())} for line in open(filepath, 'r').readlines()])
+    return str([{key: value if key == 'class' else int(value) for key, value in zip(const.LABEL_KEYS, line.split() + [1.0,])} for line in open(filepath, 'r').readlines()])
 
 
 def preprocess():
