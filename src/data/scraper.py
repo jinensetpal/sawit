@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from src.utils import warmup
+from src.utils import warmup, create_bbox
 from src import const
 
 from utils.general import non_max_suppression
@@ -63,7 +63,7 @@ def annotate():
             with torch.no_grad():
                 for detection in non_max_suppression(model(torchvision.transforms.functional.pil_to_tensor(img).to(torch.half).unsqueeze(0).to(const.DEVICE)),
                                                      iou_thres=0, conf_thres=0.99, max_det=10)[0].tolist():
-                    labels.append({key: value for key, value in zip(const.LABEL_KEYS, [const.CLASSES[int(detection[-1])],] + detection[:5])})
+                    labels.append(create_bbox(detection))
 
             metadata.append({'path': (Path('images') / 'augmented' / framename).as_posix(),
                              'date': date,

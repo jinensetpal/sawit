@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from dagshub.data_engine import datasources
+from src.utils import create_bbox
 from src import const
 import random
 
@@ -24,7 +25,7 @@ def enrich(row):
 
 
 def encoded_json(filepath):
-    return str([{key: value if key == 'class' else int(value) for key, value in zip(const.LABEL_KEYS, line.split() + [1.0,])} for line in open(filepath, 'r').readlines()])
+    return str([create_bbox(line, voc=True) for line in open(filepath, 'r').readlines()])
 
 
 def preprocess():
@@ -39,6 +40,7 @@ def preprocess():
 
     q = (ds['type'] == 'image')
     df['labels'] = list(q.all().as_ml_dataset('torch', tensorizers=[encoded_json,]))
+    df['labels'] = df['labels'].apply(lambda x: x[0])
 
     ds.upload_metadata_from_dataframe(df, path_column='path')
     q.save_dataset(const.DATASET_NAME)
