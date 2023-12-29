@@ -1,5 +1,3 @@
-arxiv==2.0.0
-boto3==1.34.1
 annotated-types==0.6.0
 av==11.0.0
 dagshub==0.3.12
