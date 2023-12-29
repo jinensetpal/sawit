@@ -32,9 +32,10 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 SPLITS = {'train': 0.8, 'valid': 0.2}
 
 # automated enrichment
-TARGETS = ['https://www.youtube.com/watch?v=dIChLG4_WNs',
-           'https://www.youtube.com/watch?v=ydYDqZQpim8',
-           'https://www.youtube.com/watch?v=39uYW98qOV0',
-           'https://www.youtube.com/watch?v=F0GOOP82094',
-           'https://www.youtube.com/watch?v=cKe0WSZKYgQ']
+# TARGETS = ['https://www.youtube.com/watch?v=dIChLG4_WNs',
+#            'https://www.youtube.com/watch?v=ydYDqZQpim8',
+#            'https://www.youtube.com/watch?v=39uYW98qOV0',
+#            'https://www.youtube.com/watch?v=F0GOOP82094',
+#            'https://www.youtube.com/watch?v=cKe0WSZKYgQ']
+TARGETS = ['https://www.youtube.com/watch?v=9jZH_5ZBuQQ',]
 ANNOTATOR_MODEL = 'yolo5s'
