@@ -1,4 +1,20 @@
 arxiv==2.0.0
 boto3==1.34.1
 dagshub==0.3.11
+annotated-types==0.6.0
+av==11.0.0
+dagshub==0.3.12
+dvc-s3==3.0.1
+fiftyone==0.23.2
+flake8==6.1.0
+ipykernel==6.28.0
+label-studio==1.10.0.post0
+markdown-it-py==3.0.0
+pafy==0.5.5
+pip-chill==1.0.3
+pyav==12.0.0
+pydantic-core==2.14.5
+requests-toolbelt==0.10.1
+ultralytics==8.0.229
+youtube-dl==2020.12.2
 -r src/model/yolo/requirements.txt

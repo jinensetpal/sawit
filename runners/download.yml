@@ -11,6 +11,7 @@ phases:
       - cd $CODEBUILD_SRC_DIR
       - git submodule update --init
       - pip3 install -r requirements.txt
+      - dvc pull -r origin
   build:
     commands:
       - echo download started on `date`
