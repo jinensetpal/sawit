@@ -9,6 +9,8 @@ BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / 'data'
 MODEL_DIR = BASE_DIR / 'models'
 YOLO_DIR = BASE_DIR / 'src' / 'model' / 'yolo'
+STAGING_DIR = DATA_DIR / 'staging'
+STAGING_DIR.mkdir(parents=True, exist_ok=True)
 sys.path.append(YOLO_DIR.as_posix())
 
 # remotes

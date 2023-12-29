@@ -20,6 +20,7 @@ import random
 import torch
 import pafy
 import cv2
+import sys
 
 
 # TODO: multiproc
@@ -31,7 +32,7 @@ def stream(target):
 
 
 def single_download(target):
-    with youtube_dl.YoutubeDL({'outtmpl': (const.DATA_DIR / 'staging' / f"{target.split('=')[-1]}--{datetime.datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}").as_posix()}) as ydl: ydl.download([target])
+    with youtube_dl.YoutubeDL({'outtmpl': (const.STAGING_DIR / f"{target.split('=')[-1]}--{datetime.datetime.now().strftime('%Y-%m-%d--%H-%M-%S')}").as_posix()}) as ydl: ydl.download([target])
 
 
 def download(targets):
@@ -48,7 +49,7 @@ def annotate():
     model = warmup(model)
 
     metadata = []
-    for target in glob(Path(const.DATA_DIR / 'staging' / '*.mkv').as_posix()):
+    for target in glob(Path(const.STAGING_DIR / '*.mkv').as_posix()):
         video, date, time = target[:-4].split('/')[-1].split('--')
         n_frames = len(ds['video'].contains(video).all())
         for idx, frame in enumerate(iio.imiter(target, plugin='pyav')):
@@ -74,10 +75,13 @@ def annotate():
                              'split': random.choices(list(const.SPLITS.keys()), weights=list(const.SPLITS.values()))[0],
                              'labels': str(labels)})
 
-    shutil.rmtree(const.DATA_DIR / 'staging')
+    shutil.rmtree(const.STAGING_DIR)
     ds.upload_metadata_from_dataframe(pd.DataFrame(metadata), path_column='path')
 
 
 if __name__ == '__main__':
-    download(const.TARGETS)
-    annotate()
+    if sys.arg[1] == 'download':
+        download()
+    elif sys.arg[1] == 'annotate':
+        if len(sys.arv) == 2: const.STAGING_DIR = Path(os.environ['CODEBUILD_SRC_DIR_staging'])
+        annotate()

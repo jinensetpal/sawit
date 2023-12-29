@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+  pre_build:
+    commands:
+      - python3 --version
+      - pip3 install --upgrade pip setuptools wheel
+      - cd $CODEBUILD_SRC_DIR
+      - pip3 install -r requirements.txt
+  build:
+    commands:
+      - echo annotation started on `date`
+      - ls
+      - python -m src.data.scraper annotate aws
+  post_build:
+    commands:
+      - echo annotation completed on `date`
