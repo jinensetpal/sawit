@@ -6,7 +6,7 @@ dvc==3.34.0
 fiftyone==0.23.2
 flake8==6.1.0
 ipykernel==6.28.0
-label-studio==1.10.0.post0
+label-studio
 markdown-it-py==3.0.0
 pafy==0.5.5
 pip-chill==1.0.3
