@@ -80,8 +80,8 @@ def annotate():
 
 
 if __name__ == '__main__':
-    if sys.arg[1] == 'download':
+    if sys.argv[1] == 'download':
         download()
-    elif sys.arg[1] == 'annotate':
+    elif sys.argv[1] == 'annotate':
         if len(sys.arv) == 2: const.STAGING_DIR = Path(os.environ['CODEBUILD_SRC_DIR_staging'])
         annotate()
