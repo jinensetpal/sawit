@@ -1,5 +1,6 @@
 auto_mix_prep==0.2.0
 dagshub==0.3.12
+dvc==3.34.0
 imageio==2.33.1
 opencv_python==4.8.1.78
 opencv_python_headless==4.8.1.78
