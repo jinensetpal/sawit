@@ -21,6 +21,7 @@ import torch
 import pafy
 import cv2
 import sys
+import os
 
 
 # TODO: multiproc
@@ -80,6 +81,8 @@ def annotate():
 
 
 if __name__ == '__main__':
+    dagshub.auth.add_app_token(os.getenv('TOKEN', ''))
+
     if sys.argv[1] == 'download':
         download(const.TARGETS)
     elif sys.argv[1] == 'annotate':
