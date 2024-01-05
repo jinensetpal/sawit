@@ -12,7 +12,7 @@ phases:
       - git submodule update --init
       - pip3 install -r pre-requirements.txt
       - pip3 install -r requirements.txt
-      - dvc pull -r origin
+      - dvc pull -r http
   build:
     commands:
       - echo annotation started on `date`
