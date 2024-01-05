@@ -1,0 +1,5 @@
+common==0.1.2
+data==0.4
+dual==0.1.0
+prox==0.0.17
+tight==0.1.0
