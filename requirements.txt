@@ -16,7 +16,6 @@ onnxsim==0.4.35
 opencv_python==4.8.1.78
 opencv_python_headless==4.8.1.78
 openvino==2023.2.0
-paddle==1.0.2
 pafy==0.5.5
 pandas==2.0.3
 Pillow==10.2.0
@@ -38,10 +37,11 @@ torchvision==0.16.2
 tqdm==4.66.1
 tritonclient==2.41.0
 ultralytics==8.0.229
-x2paddle==1.4.1
 youtube_dl==2020.12.2
 common==0.1.2
 data==0.4
 dual==0.1.0
 prox==0.0.17
 tight==0.1.0
+paddle==1.0.2
+x2paddle==1.4.1
