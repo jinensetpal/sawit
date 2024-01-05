@@ -83,5 +83,5 @@ if __name__ == '__main__':
     if sys.argv[1] == 'download':
         download(const.TARGETS)
     elif sys.argv[1] == 'annotate':
-        if len(sys.arv) == 2: const.STAGING_DIR = Path(os.environ['CODEBUILD_SRC_DIR_staging'])
+        if len(sys.argv) == 2: const.STAGING_DIR = Path(os.environ['CODEBUILD_SRC_DIR_staging'])
         annotate()
